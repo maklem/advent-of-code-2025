@@ -89,8 +89,11 @@ fn main() {
         Ok(file) => file,
         Err(err) => panic!("Could not read file: {}", err),
     };
-    let mut current_position = CODE_START;
-    let mut code_count = 0;
+    let mut aoc0101_position = CODE_START;
+    let mut aoc0101_count = 0;
+
+    let mut aoc0102_position = CODE_START;
+    let mut aoc0102_count = 0;
 
     let mut code_reader = CodeReader::new();
     for char in code.chars() {
@@ -98,17 +101,34 @@ fn main() {
     }
 
     for current_move in &code_reader.moves {
-        current_position += if current_move.moving_positive {
+        /* AoC 2025 - Day 1 - Part 1 */
+        /* Count when zero after rotation */
+        aoc0101_position += if current_move.moving_positive {
             current_move.length
         } else {
             -current_move.length
         };
-        current_position %= 100;
+        aoc0101_position %= 100;
 
-        if current_position == 0 {
-            code_count += 1;
+        if aoc0101_position == 0 {
+            aoc0101_count += 1;
         }
+
+        /* AoC 2025 - Day 1 - Part 2 */
+        /* Count every zero hit */
+        let mut aoc0102_rotation = current_move.length;
+        while aoc0102_rotation > 0 {
+            aoc0102_position += if current_move.moving_positive { 1 } else { -1 };
+            aoc0102_position %= 100;
+
+            if aoc0102_position == 0 {
+                aoc0102_count += 1;
+            }
+            aoc0102_rotation -= 1;
+        }
+
     }
 
-    print!("The code is {}", code_count);
+    print!("The AoC 01-01 code is {}\n", aoc0101_count);
+    print!("The AoC 01-02 code is {}\n", aoc0102_count);
 }
