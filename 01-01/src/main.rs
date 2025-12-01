@@ -1,4 +1,4 @@
-use std::{fs};
+use std::fs;
 
 const INPUT_FILENAME: &str = "input.txt";
 const CODE_START: i32 = 50;
@@ -22,7 +22,7 @@ struct CodeReader {
 
 impl CodeReader {
     pub fn new() -> Self {
-        CodeReader{
+        CodeReader {
             state: CodeReaderState::SearchingDirection,
             direction_moving_positive: true,
             length_buffer: String::new(),
@@ -31,31 +31,48 @@ impl CodeReader {
 
     fn process_direction(&mut self, input: char) -> CodeReaderState {
         match input {
-            'L' => { self.direction_moving_positive = false; CodeReaderState::SearchingCount },
-            'R' =>  { self.direction_moving_positive = true; CodeReaderState::SearchingCount },
-            _ => { panic!("unexpected character in process_direction") }
+            'L' => {
+                self.direction_moving_positive = false;
+                CodeReaderState::SearchingCount
+            }
+            'R' => {
+                self.direction_moving_positive = true;
+                CodeReaderState::SearchingCount
+            }
+            _ => {
+                panic!("unexpected character in process_direction")
+            }
         }
     }
 
     fn process_count(&mut self, input: char) -> CodeReaderState {
         match input {
             '\n' => CodeReaderState::Done,
-            '0'..='9' => { self.length_buffer.push(input); CodeReaderState::SearchingCount }
-            _ => { panic!("unexpected character in process_count") }
+            '0'..='9' => {
+                self.length_buffer.push(input);
+                CodeReaderState::SearchingCount
+            }
+            _ => {
+                panic!("unexpected character in process_count")
+            }
         }
     }
 
     pub fn read(&mut self, input: char) -> Option<Move> {
         self.state = match self.state {
-            CodeReaderState::SearchingDirection => { self.process_direction(input) },
-            CodeReaderState::SearchingCount => { self.process_count(input) },
-            CodeReaderState::Done => { CodeReaderState::Done },
+            CodeReaderState::SearchingDirection => self.process_direction(input),
+            CodeReaderState::SearchingCount => self.process_count(input),
+            CodeReaderState::Done => CodeReaderState::Done,
         };
 
         if self.state == CodeReaderState::Done {
             let length = self.length_buffer.parse::<i32>();
             if length.is_err() {
-                panic!("could not parse int {} error {:?}", self.length_buffer, length.err())
+                panic!(
+                    "could not parse int {} error {:?}",
+                    self.length_buffer,
+                    length.err()
+                )
             }
             let next_move = Move {
                 moving_positive: self.direction_moving_positive,
@@ -63,7 +80,7 @@ impl CodeReader {
             };
             self.length_buffer.clear();
             self.state = CodeReaderState::SearchingDirection;
-            return Some(next_move)
+            return Some(next_move);
         }
         None
     }
@@ -81,12 +98,14 @@ fn main() {
     for char in code.chars() {
         let next_move = code_reader.read(char);
 
-        if next_move.is_some() {
-            let current_move = next_move.unwrap();
+        if let Some(current_move) = next_move {
+            current_position += if current_move.moving_positive {
+                current_move.length
+            } else {
+                -current_move.length
+            };
+            current_position %= 100;
 
-            current_position += if current_move.moving_positive { current_move.length } else { -current_move.length };
-            current_position = current_position % 100;
-            
             if current_position == 0 {
                 code_count += 1;
             }
@@ -94,4 +113,3 @@ fn main() {
     }
     print!("The code is {}", code_count);
 }
-
