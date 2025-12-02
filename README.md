@@ -9,3 +9,4 @@ See [Advent of Code](https://adventofcode.com/) for puzzles, instructions and in
 # Puzzles
 
 ⭐⭐ Day 1
+⭐⭐ Day 2
