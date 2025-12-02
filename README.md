@@ -6,7 +6,15 @@ See [Advent of Code](https://adventofcode.com/) for puzzles, instructions and in
 
 * Rust
 
+# Priorities
+
+* 🥳 have fun
+* 🧩 solve puzzles
+* 🦀 learn rust
+* 👾 learn generic software development strategies
+* highly optional: code that is readable, well tested, optimized (except where these aid higher priorities)
+
 # Puzzles
 
-⭐⭐ Day 1
-⭐⭐ Day 2
+⭐⭐ [Day 1 - Secret Entrance](01/)  
+⭐⭐ [Day 2 - Gift Shop](02/)  
