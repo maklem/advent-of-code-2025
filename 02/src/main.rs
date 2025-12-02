@@ -1,19 +1,14 @@
 use std::mem::replace;
 
 enum ReaderState {
-    ReadingStart {
-        buffer: String,
-    },
-    ReadingEnd {
-        start: String,
-        buffer: String,
-    },
+    ReadingStart { buffer: String },
+    ReadingEnd { start: String, buffer: String },
     DoneReading,
     InvalidState,
 }
 
 struct Reader {
-    state: ReaderState
+    state: ReaderState,
 }
 
 struct ProductRange {
@@ -27,38 +22,56 @@ fn read_start(input: char, mut buffer: String) -> ReaderState {
             buffer.push(input);
             ReaderState::ReadingStart { buffer }
         }
-        '-' => ReaderState::ReadingEnd { start: buffer, buffer: String::new() },
-        _ => panic!("unexpected character {} in read_start", input)
+        '-' => ReaderState::ReadingEnd {
+            start: buffer,
+            buffer: String::new(),
+        },
+        _ => panic!("unexpected character {} in read_start", input),
     }
 }
 
-fn read_end(input: char, start: String, mut buffer: String, result: &mut Option<ProductRange>) -> ReaderState {
+fn read_end(
+    input: char,
+    start: String,
+    mut buffer: String,
+    result: &mut Option<ProductRange>,
+) -> ReaderState {
     match input {
         '0'..='9' => {
             buffer.push(input);
-            ReaderState::ReadingEnd { start: start, buffer }
+            ReaderState::ReadingEnd { start, buffer }
         }
         ',' => {
             let num_start = start.parse::<i64>().unwrap();
             let num_end = buffer.parse::<i64>().unwrap();
-            *result = Some(ProductRange{start: num_start, end: num_end});
-            ReaderState::ReadingStart { buffer: String::new() }
-        },
+            *result = Some(ProductRange {
+                start: num_start,
+                end: num_end,
+            });
+            ReaderState::ReadingStart {
+                buffer: String::new(),
+            }
+        }
         '\r' => ReaderState::ReadingEnd { start, buffer },
         '\n' => {
             let num_start = start.parse::<i64>().unwrap();
             let num_end = buffer.parse::<i64>().unwrap();
-            *result = Some(ProductRange{start: num_start, end: num_end});
+            *result = Some(ProductRange {
+                start: num_start,
+                end: num_end,
+            });
             ReaderState::DoneReading
         }
-        _ => panic!("unexpected character {} in read_end", input)
+        _ => panic!("unexpected character {} in read_end", input),
     }
 }
 
 impl Reader {
     pub fn new() -> Self {
-        Reader{
-            state: ReaderState::ReadingStart { buffer: String::new() }
+        Reader {
+            state: ReaderState::ReadingStart {
+                buffer: String::new(),
+            },
         }
     }
 
@@ -67,8 +80,10 @@ impl Reader {
         let mut product_range = Option::<ProductRange>::None;
 
         self.state = match state {
-            ReaderState::ReadingStart{ buffer } => read_start(input, buffer),
-            ReaderState::ReadingEnd{ start, buffer } => read_end(input, start, buffer, &mut product_range),
+            ReaderState::ReadingStart { buffer } => read_start(input, buffer),
+            ReaderState::ReadingEnd { start, buffer } => {
+                read_end(input, start, buffer, &mut product_range)
+            }
             ReaderState::DoneReading => panic!("received data after end"),
             ReaderState::InvalidState => panic!("received data in temporary invalid state"),
         };
@@ -94,7 +109,7 @@ fn is_valid_product_part1(id: i64) -> bool {
     if length % 2 != 0 {
         return true;
     }
-    let factor = pow10(length/2) + 1;
+    let factor = pow10(length / 2) + 1;
 
     id % factor != 0
 }
@@ -103,7 +118,7 @@ fn find_invalid_products_part1(products: &ProductRange) -> Vec<i64> {
     let mut result: Vec<i64> = vec![];
 
     for id in products.start..=products.end {
-        if ! is_valid_product_part1(id) {
+        if !is_valid_product_part1(id) {
             result.push(id);
         }
     }
@@ -114,8 +129,7 @@ fn find_invalid_products_part1(products: &ProductRange) -> Vec<i64> {
 fn is_valid_product_part2(id: i64) -> bool {
     let length = number_length(id);
 
-    for segment_length in 1..10
-    {
+    for segment_length in 1..10 {
         if length % segment_length != 0 {
             continue;
         }
@@ -131,7 +145,7 @@ fn is_valid_product_part2(id: i64) -> bool {
         }
 
         if id % factor == 0 {
-            return false
+            return false;
         }
     }
     true
@@ -141,14 +155,13 @@ fn find_invalid_products_part2(products: &ProductRange) -> Vec<i64> {
     let mut result: Vec<i64> = vec![];
 
     for id in products.start..=products.end {
-        if ! is_valid_product_part2(id) {
+        if !is_valid_product_part2(id) {
             result.push(id);
         }
     }
 
     result
 }
-
 
 fn main() {
     let mut reader = Reader::new();
@@ -173,46 +186,61 @@ fn main() {
             }
         }
     }
-    print!("Part 1\n\n");
-    print!("Invalid product ids found: {}\n", invalid_products_part1.len());
+    print!("== Part 1 ==\n\n");
+    println!(
+        "Invalid product ids found: {}",
+        invalid_products_part1.len()
+    );
 
     let mut summarized = 0;
     for id in invalid_products_part1 {
         summarized += id;
     }
-    print!("sum of invalid product ids: {}\n", summarized);
+    println!("sum of invalid product ids: {}", summarized);
 
-    print!("\n\nPart 2\n\n");
-    print!("Invalid product ids found: {}\n", invalid_products_part2.len());
+    print!("\n\n== Part 2 ==\n\n");
+    println!(
+        "Invalid product ids found: {}",
+        invalid_products_part2.len()
+    );
     summarized = 0;
     for id in invalid_products_part2 {
         summarized += id;
     }
-    print!("sum of invalid product ids: {}\n", summarized);
+    println!("sum of invalid product ids: {}", summarized);
 }
 
 #[cfg(test)]
 mod tests {
-    use std::{any::Any, process::id, result, task::ready};
-
-    use crate::{ProductRange, Reader, ReaderState, find_invalid_products_part1, is_valid_product_part1, read_end};
+    use crate::{
+        ProductRange, Reader, find_invalid_products_part1, is_valid_product_part1, read_end,
+    };
 
     #[test]
     fn test_invalid_product_ids() {
-        assert!(! is_valid_product_part1(22));
-        assert!(! is_valid_product_part1(2020));
-        assert!(! is_valid_product_part1(123123));
+        assert!(!is_valid_product_part1(22));
+        assert!(!is_valid_product_part1(2020));
+        assert!(!is_valid_product_part1(123123));
     }
 
     #[test]
     fn test_product_range() {
-        assert!(find_invalid_products_part1(crate::ProductRange { start: 10, end: 25 }).len() == 2);
-        assert!(find_invalid_products_part1(crate::ProductRange { start: 1000, end: 1234 }).len() == 3);
+        assert!(
+            find_invalid_products_part1(&crate::ProductRange { start: 10, end: 25 }).len() == 2
+        );
+        assert!(
+            find_invalid_products_part1(&crate::ProductRange {
+                start: 1000,
+                end: 1234
+            })
+            .len()
+                == 3
+        );
     }
 
     #[test]
     fn test_read_end_komma() {
-        let start= "1009".to_string();
+        let start = "1009".to_string();
         let end = "1011".to_string();
         let mut result = Option::<ProductRange>::None;
 
@@ -223,7 +251,7 @@ mod tests {
 
     #[test]
     fn test_read_end_linebreak() {
-        let start= "1009".to_string();
+        let start = "1009".to_string();
         let end = "1011".to_string();
         let mut result = Option::<ProductRange>::None;
 
@@ -233,7 +261,7 @@ mod tests {
     }
 
     #[test]
-    fn test_reader () {
+    fn test_reader() {
         let inputstream = "4000-4045\n".to_string();
 
         let mut reader = Reader::new();
