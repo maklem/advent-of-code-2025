@@ -1,5 +1,6 @@
+use std::fs::File;
+use std::io::{BufReader, Read};
 use std::mem::replace;
-
 enum ReaderState {
     ReadingStart { buffer: String },
     ReadingEnd { start: String, buffer: String },
@@ -96,12 +97,21 @@ fn number_length(num: i64) -> i64 {
     (num as f64).log10() as i64 + 1
 }
 
+const POWERS: [i64; 11] = [
+    1,
+    10,
+    100,
+    1000,
+    10000,
+    100000,
+    1000000,
+    10000000,
+    100000000,
+    1000000000,
+    10000000000,
+];
 fn pow10(exponent: i64) -> i64 {
-    let mut num = 1i64;
-    for _ in 1..=exponent {
-        num *= 10
-    }
-    num
+    POWERS[exponent as usize]
 }
 
 fn is_valid_product_part1(id: i64) -> bool {
@@ -129,7 +139,7 @@ fn find_invalid_products_part1(products: &ProductRange) -> Vec<i64> {
 fn is_valid_product_part2(id: i64) -> bool {
     let length = number_length(id);
 
-    for segment_length in 1..10 {
+    for segment_length in (1..7).rev() {
         if length % segment_length != 0 {
             continue;
         }
@@ -139,9 +149,8 @@ fn is_valid_product_part2(id: i64) -> bool {
         }
 
         let mut factor = 1;
-        for _ in 1..repetitions {
-            factor *= pow10(segment_length);
-            factor += 1;
+        for reps in 1..repetitions {
+            factor += pow10(segment_length * reps);
         }
 
         if id % factor == 0 {
@@ -165,49 +174,31 @@ fn find_invalid_products_part2(products: &ProductRange) -> Vec<i64> {
 
 fn main() {
     let mut reader = Reader::new();
-    let mut invalid_products_part1: Vec<i64> = vec![];
-    let mut invalid_products_part2: Vec<i64> = vec![];
+    let mut invalid_products_part1 = 0;
+    let mut invalid_products_part2 = 0;
 
-    let code = match std::fs::read_to_string("input.txt") {
-        Ok(file) => file,
-        Err(err) => panic!("Could not read file: {}", err),
-    };
+    let file = File::open("input.txt").unwrap();
+    let fileio = BufReader::new(file);
 
-    for input in code.chars() {
-        let event = reader.read(input);
+    for input in fileio.bytes() {
+        let checked_input = input.ok().unwrap();
+        let event = reader.read(checked_input as char);
         if let Some(products) = event {
             let new_invalid_products_part1 = find_invalid_products_part1(&products);
             for id in new_invalid_products_part1 {
-                invalid_products_part1.push(id);
+                invalid_products_part1 += id;
             }
             let new_invalid_products_part2 = find_invalid_products_part2(&products);
             for id in new_invalid_products_part2 {
-                invalid_products_part2.push(id);
+                invalid_products_part2 += id;
             }
         }
     }
-    print!("== Part 1 ==\n\n");
-    println!(
-        "Invalid product ids found: {}",
-        invalid_products_part1.len()
-    );
+    println!("== Part 1 ==");
+    println!("sum of invalid product ids: {}", invalid_products_part1);
 
-    let mut summarized = 0;
-    for id in invalid_products_part1 {
-        summarized += id;
-    }
-    println!("sum of invalid product ids: {}", summarized);
-
-    print!("\n\n== Part 2 ==\n\n");
-    println!(
-        "Invalid product ids found: {}",
-        invalid_products_part2.len()
-    );
-    summarized = 0;
-    for id in invalid_products_part2 {
-        summarized += id;
-    }
-    println!("sum of invalid product ids: {}", summarized);
+    println!("\n== Part 2 ==");
+    println!("sum of invalid product ids: {}", invalid_products_part2);
 }
 
 #[cfg(test)]
