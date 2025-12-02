@@ -211,20 +211,21 @@ fn main() {
 }
 
 #[cfg(test)]
+#[allow(non_snake_case)]
 mod tests {
     use crate::{
         ProductRange, Reader, find_invalid_products_part1, is_valid_product_part1, read_end,
     };
 
     #[test]
-    fn test_invalid_product_ids() {
+    fn is_invalid_product_id__detects_invalid_products() {
         assert!(!is_valid_product_part1(22));
         assert!(!is_valid_product_part1(2020));
         assert!(!is_valid_product_part1(123123));
     }
 
     #[test]
-    fn test_product_range() {
+    fn find_invalid_products_part1__when_called__finds_expected_invalid_ids() {
         assert!(
             find_invalid_products_part1(&crate::ProductRange { start: 10, end: 25 }).len() == 2
         );
@@ -239,7 +240,7 @@ mod tests {
     }
 
     #[test]
-    fn test_read_end_komma() {
+    fn read_end__on_comma__returns_ProductRange() {
         let start = "1009".to_string();
         let end = "1011".to_string();
         let mut result = Option::<ProductRange>::None;
@@ -250,7 +251,7 @@ mod tests {
     }
 
     #[test]
-    fn test_read_end_linebreak() {
+    fn read_end__on_linebreak__returns_ProductRange() {
         let start = "1009".to_string();
         let end = "1011".to_string();
         let mut result = Option::<ProductRange>::None;
@@ -261,7 +262,7 @@ mod tests {
     }
 
     #[test]
-    fn test_reader() {
+    fn Reader__given_a_string__returns_ProductRange() {
         let inputstream = "4000-4045\n".to_string();
 
         let mut reader = Reader::new();
