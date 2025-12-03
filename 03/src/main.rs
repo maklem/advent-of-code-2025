@@ -52,6 +52,8 @@ fn find_maximal_power(line: &str, digits: usize) -> i64 {
 }
 
 fn main() {
+    let start = std::time::Instant::now();
+
     let code = match std::fs::read_to_string("input.txt") {
         Ok(file) => file,
         Err(err) => panic!("Could not read file: {}", err),
@@ -70,6 +72,7 @@ fn main() {
 
     println!("Part 1 - Summed up power is {}", maximal_power_pt1);
     println!("Part 2 - Summed up power is {}", maximal_power_pt2);
+    println!("evaluation took {} ms", start.elapsed().as_nanos() as f64 / 1e6)
 }
 
 #[cfg(test)]
