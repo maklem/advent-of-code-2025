@@ -3,6 +3,8 @@ struct Extremal {
     position: usize,
 }
 
+/// converts number chars '0'..'9' to their numerical value.
+/// panics for any other character
 fn to_numerical_value(symbol: char) -> i64 {
     match &symbol {
         '0' => 0,
@@ -19,6 +21,8 @@ fn to_numerical_value(symbol: char) -> i64 {
     }
 }
 
+/// given a string of decimals, it returns value and position 
+/// of the first occurance of the largest digit
 fn find_largest_symbol(line: &str) -> Extremal {
     let mut current_max = 0;
     let mut current_pos = 0;
@@ -36,6 +40,9 @@ fn find_largest_symbol(line: &str) -> Extremal {
     }
 }
 
+/// finds maximal power (following day 3 of Advent of Code 2025)
+/// 
+/// panics if requested digits exceed the ones available
 fn find_maximal_power(line: &str, digits: usize) -> i64 {
     let length = line.len();
     let mut current_offset = 0;
@@ -83,12 +90,22 @@ mod tests {
     #[test]
     fn find_maximal_power__with_multiple_maxima__finds_power() {
         let input = "000900800900";
-        assert_eq!(99, find_maximal_power(input, 2))
+        assert_eq!(99, find_maximal_power(input, 2));
+        assert_eq!(98900, find_maximal_power(input, 5));
     }
 
     #[test]
     fn find_maximal_power__with_maximum_at_end__finds_power() {
         let input = "0007008009";
-        assert_eq!(89, find_maximal_power(input, 2))
+        assert_eq!(89, find_maximal_power(input, 2));
+        assert_eq!(809, find_maximal_power(input, 3));
+        assert_eq!(78009, find_maximal_power(input, 5));
+    }
+
+    #[test]
+    #[should_panic]
+    fn find_maximal_power__given_more_digits_than_available__panics () {
+        let input = "321";
+        find_maximal_power(input, 4);
     }
 }
