@@ -21,7 +21,7 @@ fn to_numerical_value(symbol: char) -> i64 {
     }
 }
 
-/// given a string of decimals, it returns value and position 
+/// given a string of decimals, it returns value and position
 /// of the first occurance of the largest digit
 fn find_largest_symbol(line: &str) -> Extremal {
     let mut current_max = 0;
@@ -41,7 +41,7 @@ fn find_largest_symbol(line: &str) -> Extremal {
 }
 
 /// finds maximal power (following day 3 of Advent of Code 2025)
-/// 
+///
 /// panics if requested digits exceed the ones available
 fn find_maximal_power(line: &str, digits: usize) -> i64 {
     let length = line.len();
@@ -79,7 +79,10 @@ fn main() {
 
     println!("Part 1 - Summed up power is {}", maximal_power_pt1);
     println!("Part 2 - Summed up power is {}", maximal_power_pt2);
-    println!("evaluation took {} ms", start.elapsed().as_nanos() as f64 / 1e6)
+    println!(
+        "evaluation took {} ms",
+        start.elapsed().as_nanos() as f64 / 1e6
+    )
 }
 
 #[cfg(test)]
@@ -104,7 +107,7 @@ mod tests {
 
     #[test]
     #[should_panic]
-    fn find_maximal_power__given_more_digits_than_available__panics () {
+    fn find_maximal_power__given_more_digits_than_available__panics() {
         let input = "321";
         find_maximal_power(input, 4);
     }
