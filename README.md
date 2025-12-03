@@ -18,3 +18,4 @@ See [Advent of Code](https://adventofcode.com/) for puzzles, instructions and in
 
 ⭐⭐ [Day 1 - Secret Entrance](01/)  
 ⭐⭐ [Day 2 - Gift Shop](02/)  
+⭐⭐ [Day 3 - Lobby](03/)  
