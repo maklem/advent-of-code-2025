@@ -9,7 +9,7 @@ impl PaperRollStorage {
         let lines = input.lines();
         let mut rows = 0;
         let mut cols = 0;
-        let mut storage = Vec::<Vec::<bool>>::new();
+        let mut storage = Vec::<Vec<bool>>::new();
 
         for (index, line) in lines.enumerate() {
             if cols == 0 {
@@ -27,23 +27,30 @@ impl PaperRollStorage {
                 });
             }
             storage.push(linestorage);
-            rows = index+1
+            rows = index + 1
         }
-        PaperRollStorage { storage: storage, rows: rows as i32, cols: cols as i32 }
+        PaperRollStorage {
+            storage,
+            rows: rows as i32,
+            cols: cols as i32,
+        }
     }
-    
+
+    pub fn take_paper_roll(&mut self, row: i32, col: i32) {
+        self.storage[row as usize][col as usize] = false;
+    }
+
     pub fn is_paper_roll(&self, row: i32, col: i32) -> bool {
         if (row < 0) || (col < 0) || (row >= self.rows) || (col >= self.cols) {
-            return false
+            return false;
         }
         self.storage[row as usize][col as usize]
     }
 
-
     pub fn count_neighbours(&self, row: i32, col: i32) -> i32 {
         let mut count = 0;
-        for r in row-1..=row+1 {
-            for c in col-1..=col+1 {
+        for r in row - 1..=row + 1 {
+            for c in col - 1..=col + 1 {
                 if r == row && c == col {
                     continue;
                 }
@@ -63,12 +70,12 @@ fn main() {
         Ok(file) => file,
         Err(err) => panic!("Could not read file: {}", err),
     };
-    let storage = PaperRollStorage::new(code);
+    let mut storage = PaperRollStorage::new(code);
 
     let mut available_paper_rolls = 0;
     for row in 0..storage.rows {
         for col in 0..storage.cols {
-            if ! storage.is_paper_roll(row, col) {
+            if !storage.is_paper_roll(row, col) {
                 continue;
             }
 
@@ -77,7 +84,30 @@ fn main() {
             }
         }
     }
-    println!("paper rolls available: {}", available_paper_rolls);
+    println!("[Part 1] paper rolls available: {}", available_paper_rolls);
+
+    available_paper_rolls = 0;
+    loop {
+        let mut taken_this_time = 0;
+        for row in 0..storage.rows {
+            for col in 0..storage.cols {
+                if !storage.is_paper_roll(row, col) {
+                    continue;
+                }
+
+                if storage.count_neighbours(row, col) < 4 {
+                    storage.take_paper_roll(row, col);
+                    taken_this_time += 1;
+                }
+            }
+        }
+
+        available_paper_rolls += taken_this_time;
+        if taken_this_time == 0 {
+            break;
+        }
+    }
+    println!("[Part 2] paper rolls available: {}", available_paper_rolls);
 
     println!(
         "evaluation took {} ms",
