@@ -15,13 +15,12 @@ impl FreshIngredients {
     }
 
     pub fn intersects(&self, other: &Self) -> bool {
-        (self.start <= other.start && other.start <= self.end)
-            || (self.start <= other.end && other.end <= self.end)
-            || (other.start <= self.start && self.start <= other.end)
-            || (other.start <= self.start && self.start <= other.end)
+        self.start <= other.start && other.start <= self.end
+            || self.start <= other.end && other.end <= self.end
+            || self.start <= other.end && other.start <= self.start
     }
 
-    pub fn merge(&mut self, other: &Self) -> () {
+    pub fn merge(&mut self, other: &Self) {
         self.start = min(self.start, other.start);
         self.end = max(self.end, other.end);
     }
@@ -81,14 +80,11 @@ fn main() {
     // Step 1.2: merge overlapping ranges
     let mut merged_fresh_storage: Vec<FreshIngredients> = vec![];
     for entry in &fresh_storage {
-        let mut merged = false;
-        if let Some(storage) = merged_fresh_storage.last_mut() {
-            if storage.intersects(entry) {
-                storage.merge(entry);
-                merged = true;
-            }
-        }
-        if !merged {
+        if let Some(storage) = merged_fresh_storage.last_mut()
+            && storage.intersects(entry)
+        {
+            storage.merge(entry);
+        } else {
             merged_fresh_storage.push(FreshIngredients {
                 start: entry.start,
                 end: entry.end,
