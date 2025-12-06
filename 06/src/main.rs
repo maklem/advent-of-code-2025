@@ -48,6 +48,59 @@ fn part1(lines: &Vec<&str>) -> i64 {
     total
 }
 
+fn parse_vertical_number(lines: &Vec<&str>, index: usize) -> Option<i64> {
+    let mut vertical_number = String::new();
+    for line_index in 0..4 {
+        let symbol = lines[line_index].chars().nth(index).unwrap().to_string();
+        vertical_number += match symbol.as_str() {
+            " " => "",
+            _ => &symbol
+        }
+
+    }
+    if vertical_number.len() == 0  {
+        None
+    }else{
+        Some(vertical_number.parse::<i64>().unwrap())
+    }
+}
+
+fn parse_math_operation(line: &str, index: usize) -> Option<MathOperation> {
+    let symbol = line.chars().nth(index).unwrap().to_string();
+    match symbol.as_str() {
+        "+" => Some(MathOperation::Add),
+        "*" => Some(MathOperation::Multiply),
+        " " => None,
+        _ => panic!("could not parse math operation >{}<", symbol)
+    }
+}
+
+fn part2(lines: &Vec<&str>) -> i64 {
+    let mut total = 0;
+
+    let mut current_operation = MathOperation::Add;
+    let mut current_value = 0;
+    for index in 0..lines[0].len() {
+        if let Some(operation) = parse_math_operation(lines[4], index) {
+            current_operation = operation;
+            total += current_value;
+            current_value = match &current_operation {
+                MathOperation::Add => 0,
+                MathOperation::Multiply => 1,
+            };
+        }
+
+        if let Some(number) = parse_vertical_number(lines, index) {
+            current_value = match &current_operation {
+                MathOperation::Add => current_value + number,
+                MathOperation::Multiply => current_value * number,
+            };
+        }
+        
+    }
+
+    total + current_value
+}
 
 fn main() {
     let start = std::time::Instant::now();
@@ -58,9 +111,9 @@ fn main() {
     };
 
     let lines: Vec<&str> = code.lines().collect();
-    let total = part1(&lines);
 
-    println!("[Part 1] Total = {}", total);
+    println!("[Part 1] Total = {}", part1(&lines));
+    println!("[Part 2] Total = {}", part2(&lines));
 
     println!(
         "evaluation took {} ms",
@@ -71,7 +124,7 @@ fn main() {
 #[cfg(test)]
 #[allow(non_snake_case)]
 mod tests {
-    use crate::{MathOperation, convert_to_numbers, convert_to_operation};
+    use crate::{MathOperation, convert_to_numbers, convert_to_operation, parse_vertical_number};
 
     #[test]
     fn convert_to_numbers__converts_string_to_numbers() {
@@ -93,5 +146,14 @@ mod tests {
                 MathOperation::Multiply,
             ]
         );
+    }
+
+    #[test]
+    fn parse_vertical_number__evaluates_number() {
+        let input = vec!["11  ", " 22 ", "  3 ", "  0 "];
+        assert_eq!(Some(1), parse_vertical_number(&input, 0));
+        assert_eq!(Some(12), parse_vertical_number(&input, 1));
+        assert_eq!(Some(230), parse_vertical_number(&input, 2));
+        assert_eq!(None, parse_vertical_number(&input, 3));
     }
 }
