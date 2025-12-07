@@ -4,6 +4,7 @@ members = [
 ]
 exclude = [
     ".git",
-    "target"
+    ".github",
+    "target",
 ]
 resolver = "3"
