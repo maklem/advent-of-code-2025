@@ -27,7 +27,7 @@ fn convert_to_operation(line: &str) -> Vec<MathOperation> {
     result
 }
 
-fn part1(lines: &Vec<&str>) -> i64 {
+fn part1(lines: &[&str]) -> i64 {
     let line0 = convert_to_numbers(lines[0]);
     let line1 = convert_to_numbers(lines[1]);
     let line2 = convert_to_numbers(lines[2]);
@@ -37,12 +37,8 @@ fn part1(lines: &Vec<&str>) -> i64 {
     let mut total = 0;
     for index in 0..operations.len() {
         total += match operations[index] {
-            MathOperation::Add => {
-                line0[index] + line1[index] + line2[index] + line3[index]
-            },
-            MathOperation::Multiply => {
-                line0[index] * line1[index] * line2[index] * line3[index]
-            },            
+            MathOperation::Add => line0[index] + line1[index] + line2[index] + line3[index],
+            MathOperation::Multiply => line0[index] * line1[index] * line2[index] * line3[index],
         }
     }
     total
@@ -50,17 +46,16 @@ fn part1(lines: &Vec<&str>) -> i64 {
 
 fn parse_vertical_number(lines: &Vec<&str>, index: usize) -> Option<i64> {
     let mut vertical_number = String::new();
-    for line_index in 0..4 {
-        let symbol = lines[line_index].chars().nth(index).unwrap().to_string();
+    for line in lines.iter().take(4) {
+        let symbol = line.chars().nth(index).unwrap().to_string();
         vertical_number += match symbol.as_str() {
             " " => "",
-            _ => &symbol
+            _ => &symbol,
         }
-
     }
-    if vertical_number.len() == 0  {
+    if vertical_number.is_empty() {
         None
-    }else{
+    } else {
         Some(vertical_number.parse::<i64>().unwrap())
     }
 }
@@ -71,7 +66,7 @@ fn parse_math_operation(line: &str, index: usize) -> Option<MathOperation> {
         "+" => Some(MathOperation::Add),
         "*" => Some(MathOperation::Multiply),
         " " => None,
-        _ => panic!("could not parse math operation >{}<", symbol)
+        _ => panic!("could not parse math operation >{}<", symbol),
     }
 }
 
@@ -96,7 +91,6 @@ fn part2(lines: &Vec<&str>) -> i64 {
                 MathOperation::Multiply => current_value * number,
             };
         }
-        
     }
 
     total + current_value

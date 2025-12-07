@@ -126,9 +126,8 @@ fn main() {
             }
             aoc0102_rotation -= 1;
         }
-
     }
 
-    print!("The AoC 01-01 code is {}\n", aoc0101_count);
-    print!("The AoC 01-02 code is {}\n", aoc0102_count);
+    println!("The AoC 01-01 code is {}", aoc0101_count);
+    println!("The AoC 01-02 code is {}", aoc0102_count);
 }

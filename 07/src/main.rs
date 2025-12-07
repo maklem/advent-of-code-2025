@@ -2,10 +2,8 @@ fn part1(lines: &Vec<&str>) -> (i64, i64) {
     let mut total = 0;
     let mut beams: Vec<i64> = vec![];
     for line in lines {
-        if beams.len() == 0 {
-            for _ in 0..line.len() {
-                beams.push(0);
-            }
+        if beams.is_empty() {
+            beams = vec![0; line.len()];
         }
 
         for (index, entry) in line.chars().enumerate() {
@@ -13,8 +11,8 @@ fn part1(lines: &Vec<&str>) -> (i64, i64) {
                 beams[index] = 1;
             }
             if entry == '^' && beams[index] != 0 {
-                beams[index-1] += beams[index];
-                beams[index+1] += beams[index];
+                beams[index - 1] += beams[index];
+                beams[index + 1] += beams[index];
                 beams[index] = 0;
                 total += 1;
             }
