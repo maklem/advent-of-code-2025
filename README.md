@@ -19,3 +19,7 @@ See [Advent of Code](https://adventofcode.com/) for puzzles, instructions and in
 ⭐⭐ [Day 1 - Secret Entrance](01/)  
 ⭐⭐ [Day 2 - Gift Shop](02/)  
 ⭐⭐ [Day 3 - Lobby](03/)  
+⭐⭐ [Day 4 - Printing Department](04/)  
+⭐⭐ [Day 5 - Cafeteria](05/)  
+⭐⭐ [Day 6 - Trash Compactor](06/)  
+⭐⭐ [Day 7 - Laboratories](07/)  
