@@ -121,14 +121,12 @@ fn main() {
                 || junction_networks[network_id].contains(connection.index_b)
             {
                 if let Some(primary_id) = primary_network {
-                    let merged_network = std::mem::replace(
-                        &mut junction_networks[network_id],
-                        JunctionNetwork { indices: HashSet::new() },
-                    );
+                    let merged_network = junction_networks.remove(network_id);
                     junction_networks
                         .get_mut(primary_id)
                         .unwrap()
                         .merge_from(&merged_network);
+                    break; // there can only be one other network
                 } else {
                     junction_networks[network_id].add(connection.index_a);
                     junction_networks[network_id].add(connection.index_b);
