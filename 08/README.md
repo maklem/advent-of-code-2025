@@ -13,9 +13,12 @@ Connected junctions form a network.
 
 * From particle simulations I know that calculating all N^2 distances is slow.
   One usually places all particles on a grid, and only calculates distances
-  (interactions in physics) for particles in the 3x3x3 cells around the original particle.  
-  **However** as distances are calculated once (and calculation time << human time), I took the simple approach to calculate all distances.
+  (interactions in physics) for particles in the 3x3x3 cells around the original particle.
+  * **However** as distances are calculated once (and calculation time << human time), I took the simple approach to calculate all distances.
+  * Using a hard cutoff distance, the next step of sorting connections by distance is much faster.
 * calculating a square root is slow as well. As the distance is never needed itself, I use the **distance squared**.
 * Rust does not allow modifying two elements of a `Vec` at once.
   I can not use a mutable reference and then work with another element.
   Using `std::mem::replace` I can take one element from a vector, and merge it into another element afterwards.
+  Removing the now-empty network from it's storage is beneficial too.
+* Using a `HashSet` to store network indices instead of `Vec` is faster (Surprise!!!).

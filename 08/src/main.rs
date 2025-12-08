@@ -80,7 +80,7 @@ fn main() {
                     * (junction_a.position.y - junction_b.position.y)
                 + (junction_a.position.z - junction_b.position.z)
                     * (junction_a.position.z - junction_b.position.z);
-            if distance_squared <= 200000000 { 
+            if distance_squared <= 200000000 {
                 junction_distances.push(JunctionDistance {
                     index_a,
                     index_b: index_a + offset_b + 1,
@@ -139,9 +139,7 @@ fn main() {
             let mut indices = HashSet::new();
             indices.insert(connection.index_a);
             indices.insert(connection.index_b);
-            junction_networks.push(JunctionNetwork {
-                indices,
-            });
+            junction_networks.push(JunctionNetwork { indices });
         }
 
         if !junction_networks.is_empty()
