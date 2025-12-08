@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 struct Position {
     x: i64,
     y: i64,
@@ -15,7 +17,7 @@ struct JunctionDistance {
 }
 
 struct JunctionNetwork {
-    indices: Vec<usize>,
+    indices: HashSet<usize>,
 }
 
 impl JunctionNetwork {
@@ -25,7 +27,7 @@ impl JunctionNetwork {
 
     pub fn add(&mut self, index: usize) {
         if !self.indices.contains(&index) {
-            self.indices.push(index);
+            self.indices.insert(index);
         }
     }
 
@@ -63,6 +65,11 @@ fn main() {
     };
     let junction_boxes: Vec<_> = code.lines().map(to_junction_box).collect();
 
+    println!(
+        "reading input completed at {} ms",
+        start.elapsed().as_nanos() as f64 / 1e6
+    );
+
     let mut junction_distances: Vec<JunctionDistance> = vec![];
 
     for (index_a, junction_a) in junction_boxes.iter().enumerate() {
@@ -73,17 +80,30 @@ fn main() {
                     * (junction_a.position.y - junction_b.position.y)
                 + (junction_a.position.z - junction_b.position.z)
                     * (junction_a.position.z - junction_b.position.z);
-            junction_distances.push(JunctionDistance {
-                index_a,
-                index_b: index_a + offset_b + 1,
-                distance_squared,
-            });
+            if distance_squared <= 200000000 { 
+                junction_distances.push(JunctionDistance {
+                    index_a,
+                    index_b: index_a + offset_b + 1,
+                    distance_squared,
+                });
+            }
         }
     }
+
+    println!(
+        "distances computed at {} ms",
+        start.elapsed().as_nanos() as f64 / 1e6
+    );
     junction_distances.sort_by_key(|e| e.distance_squared);
+
+    println!(
+        "distances sorted at {} ms",
+        start.elapsed().as_nanos() as f64 / 1e6
+    );
 
     let mut part1_grand_product = 0;
     let mut part2_final_connection = 0;
+    let mut part2_final_distance = 0;
 
     let mut junction_networks: Vec<JunctionNetwork> = vec![];
     for (connection_id, connection) in junction_distances.iter().enumerate() {
@@ -103,7 +123,7 @@ fn main() {
                 if let Some(primary_id) = primary_network {
                     let merged_network = std::mem::replace(
                         &mut junction_networks[network_id],
-                        JunctionNetwork { indices: vec![] },
+                        JunctionNetwork { indices: HashSet::new() },
                     );
                     junction_networks
                         .get_mut(primary_id)
@@ -118,8 +138,11 @@ fn main() {
         }
 
         if primary_network.is_none() {
+            let mut indices = HashSet::new();
+            indices.insert(connection.index_a);
+            indices.insert(connection.index_b);
             junction_networks.push(JunctionNetwork {
-                indices: vec![connection.index_a, connection.index_b],
+                indices,
             });
         }
 
@@ -128,12 +151,14 @@ fn main() {
         {
             part2_final_connection = junction_boxes[connection.index_a].position.x
                 * junction_boxes[connection.index_b].position.x;
+            part2_final_distance = connection.distance_squared;
             break;
         }
     }
 
     println!("[Part 1] Grand Product    = {}", part1_grand_product);
     println!("[Part 2] Final Connection = {}", part2_final_connection);
+    println!("[Part 2] Final Distance^2 = {}", part2_final_distance);
 
     println!(
         "evaluation took {} ms",
