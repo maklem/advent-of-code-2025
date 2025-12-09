@@ -24,3 +24,4 @@ See [Advent of Code](https://adventofcode.com/) for puzzles, instructions and in
 ⭐⭐ [Day 6 - Trash Compactor](06/)  
 ⭐⭐ [Day 7 - Laboratories](07/)  
 ⭐⭐ [Day 8 - Playground](08/)  
+⭐⭐ [Day 9 - Movie Theater](09/)  
