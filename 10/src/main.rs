@@ -1,4 +1,4 @@
-use std::iter::zip;
+use std::{cmp::min, iter::zip};
 
 struct LightPattern {
     pattern: Vec<bool>,
@@ -87,33 +87,35 @@ fn to_machine(line: &str) -> Machine {
     }
 }
 
-fn combinations(count: usize, slots: usize) -> Vec<Vec<bool>> {
+fn combinations(count: usize, slots: usize, max_count: usize) -> Vec<Vec<usize>> {
     let mut result = vec![];
     if count == 0 {
-        result.push(vec![false; slots]);
+        result.push(vec![0; slots]);
     } else {
         for padding in 0..=(slots - count) {
-            let mut local_pattern = vec![false; padding];
-            local_pattern.push(true);
-            for combination in combinations(count - 1, slots - padding - 1) {
-                let mut sub_pattern = local_pattern.clone();
-                combination.iter().for_each(|y| sub_pattern.push(*y));
-                result.push(sub_pattern);
+            let mut local_pattern = vec![0; padding];
+            for current_count in 1..=min(count, max_count) {
+                local_pattern.push(current_count);
+                for combination in combinations(count - current_count, slots - padding - 1, max_count) {
+                    let mut sub_pattern = local_pattern.clone();
+                    combination.iter().for_each(|y| sub_pattern.push(*y));
+                    result.push(sub_pattern);
+                }
             }
         }
     }
     result
 }
 
-fn find_minimal_button_presses(machine: Machine) -> usize {
+fn find_minimal_button_presses_for_pattern(machine: Machine) -> usize {
     let button_count = machine.buttons.len();
     for available_buttons in 1..button_count {
-        for combination in combinations(available_buttons, button_count) {
+        for combination in combinations(available_buttons, button_count, 1) {
             let mut pattern = LightPattern::from_len(machine.pattern.len());
             for button_press in combination
                 .iter()
                 .enumerate()
-                .filter(|(_, active)| **active)
+                .filter(|(_, active)| **active > 0)
                 .map(|(i, _)| i)
             {
                 pattern.apply_button(&machine.buttons[button_press]);
@@ -136,7 +138,7 @@ fn main() {
 
     let mut button_presses = 0;
     for machine in machines {
-        button_presses += find_minimal_button_presses(machine);
+        button_presses += find_minimal_button_presses_for_pattern(machine);
     }
     println!("Buttons pressed: {}", button_presses);
 
@@ -153,11 +155,11 @@ mod tests {
 
     #[test]
     fn combinations__for_0_slots__returns_list_of_false() {
-        assert_eq!(vec![vec![false; 5]], combinations(0, 5))
+        assert_eq!(vec![vec![0; 5]], combinations(0, 5, 1))
     }
 
     #[test]
     fn combinations__for_entries_eq_slots__returns_list_of_true() {
-        assert_eq!(vec![vec![true; 5]], combinations(5, 5))
+        assert_eq!(vec![vec![1; 5]], combinations(5, 5, 1))
     }
 }
