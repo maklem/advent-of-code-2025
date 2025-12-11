@@ -86,18 +86,20 @@ fn main() {
         .map(|n| (n.id.clone(), n))
         .collect();
 
-    let you = CacheKey{
+    let you = CacheKey {
         id: String::from("you"),
         needs_dac: false,
-        needs_fft: false,};
+        needs_fft: false,
+    };
     let paths = follow_path(&machines, you, &mut HashMap::new());
 
     println!("Found Paths: {}", paths);
 
-    let svr = CacheKey{
+    let svr = CacheKey {
         id: String::from("svr"),
         needs_dac: true,
-        needs_fft: true,};
+        needs_fft: true,
+    };
     let paths_pt2 = follow_path(&machines, svr, &mut HashMap::new());
     println!("Found Paths: {}", paths_pt2);
 
