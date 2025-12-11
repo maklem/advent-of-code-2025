@@ -71,16 +71,6 @@ impl Joltages {
                 .collect(),
         }
     }
-
-    fn apply_button(&mut self, button: &Button, count: usize) {
-        for index in &button.connected_lights {
-            self.values[*index] -= count as i64;
-        }
-    }
-
-    fn is_perfect(&self) -> bool {
-        self.values.iter().all(|v| *v == 0)
-    }
 }
 
 struct Machine {
@@ -105,8 +95,15 @@ struct SystemOfLinearEquations {
     rows: Vec<Vec<i64>>,
 }
 
+#[derive(Debug)]
+struct AoCSolution {
+    rows: Vec<Vec<i64>>,
+    dependents: Vec<usize>,
+    independents: Vec<usize>,
+}
+
 impl SystemOfLinearEquations {
-    fn from_machine(machine: &Machine) -> Self {
+    pub fn from_machine(machine: &Machine) -> Self {
         Self {
             rows: machine
                 .joltages
@@ -132,9 +129,115 @@ impl SystemOfLinearEquations {
         }
     }
 
-    /// https://en.wikipedia.org/wiki/Gaussian_elimination
-    fn gaussian_elimination(&mut self, row: usize, column: usize) {
+    fn find_row(rows: &Vec<Vec<i64>>, column: usize, skip_rows: usize) -> Option<usize> {
+        for row in skip_rows..rows.len() {
+            if rows[row][column] != 0 {
+                return Some(row);
+            }
+        }
+        None
+    }
 
+    fn eliminate_column(
+        rows: &mut Vec<Vec<i64>>,
+        source_row: usize,
+        column: usize,
+        target_row: usize,
+    ) {
+        let factor_source = rows[target_row][column];
+        let factor_target = rows[source_row][column];
+
+        let factor = if factor_target * rows[target_row][column + 1]
+            - factor_source * rows[source_row][column + 1]
+            > 0
+        {
+            1
+        } else {
+            -1
+        };
+        for col in 0..rows[target_row].len() {
+            rows[target_row][col] = factor
+                * (factor_target * rows[target_row][col] - factor_source * rows[source_row][col]);
+        }
+    }
+
+    /// https://en.wikipedia.org/wiki/Gaussian_elimination
+    pub fn gaussian_elimination(&self) -> AoCSolution {
+        let mut rows = self.rows.clone();
+        let mut dependents = vec![];
+        let mut independents = vec![];
+
+        let column_count = self.rows.first().unwrap().len();
+        let row_count = self.rows.len();
+        for index in 0..column_count - 1 {
+            let current_row = dependents.len();
+            let column = dependents.len() + independents.len();
+            if let Some(row) = SystemOfLinearEquations::find_row(&rows, column, current_row) {
+                if row != current_row {
+                    rows.swap(row, current_row);
+                }
+
+                for row in current_row + 1..row_count {
+                    SystemOfLinearEquations::eliminate_column(&mut rows, current_row, column, row);
+                }
+
+                dependents.push(index);
+            } else {
+                independents.push(index);
+            }
+        }
+        AoCSolution {
+            rows: rows,
+            dependents,
+            independents,
+        }
+    }
+}
+
+impl AoCSolution {
+    fn test_at(
+        &self,
+        parameters: &mut Vec<i64>,
+        independent_parameters: &[i64],
+        column: usize,
+    ) -> Option<i64> {
+        let row = column - independent_parameters.len();
+
+        if self.independents.contains(&column) {
+            parameters[column] = independent_parameters[0];
+            self.test_at(parameters, &independent_parameters[1..], column - 1)
+        } else if self.dependents.contains(&column) {
+            let intermediate: i64 = parameters
+                .iter()
+                .enumerate()
+                .map(|(column, value)| self.rows[row][column] * value)
+                .sum();
+            if intermediate % self.rows[row][column] == 0 {
+                parameters[column] = -intermediate / self.rows[row][column];
+                if parameters[column] >= 0 {
+                    if row == 0 {
+                        Some(parameters.iter().sum::<i64>() + 1)
+                    } else {
+                        self.test_at(parameters, &independent_parameters, column - 1)
+                    }
+                } else {
+                    None
+                }
+            } else {
+                None
+            }
+        } else {
+            None
+        }
+    }
+
+    pub fn test_parameters(&self, independent_values: &[i64]) -> Option<i64> {
+        let parameter_count = self.independents.len() + self.dependents.len();
+
+        let mut parameters = vec![0; parameter_count];
+        parameters.push(-1);
+
+        self.test_at(&mut parameters, independent_values, parameter_count - 1)
     }
 }
 
@@ -193,10 +296,52 @@ fn find_minimal_button_presses_for_pattern(machine: &Machine) -> usize {
     panic!("No suitable pattern found");
 }
 
-fn find_minimal_button_presses_for_joltage(machine: &Machine) -> usize {
-    let mut eqn = SystemOfLinearEquations::from_machine(machine);
-    eqn.gaussian_elimination();
-    0
+fn process_joltage_layer(
+    machine: &Machine,
+    sol: &AoCSolution,
+    index: usize,
+    independent_values: &mut Vec<i64>,
+) -> Option<i64> {
+    let maximum = machine.joltages.values.iter().max().unwrap();
+    let mut result = None;
+
+    if index == independent_values.len() {
+        result = sol.test_parameters(independent_values);
+    } else {
+        for current in 0..*maximum {
+            independent_values[index] = current;
+
+            let intermediate_result =
+                process_joltage_layer(machine, sol, index + 1, independent_values);
+
+            result = if let Some(new_value) = intermediate_result {
+                if let Some(old_value) = result
+                    && old_value < new_value
+                {
+                    result
+                } else {
+                    intermediate_result
+                }
+            } else {
+                result
+            }
+        }
+    }
+    result
+}
+
+fn find_minimal_button_presses_for_joltage(machine: &Machine) -> i64 {
+    let eqn = SystemOfLinearEquations::from_machine(machine);
+    let sol = eqn.gaussian_elimination();
+
+    let mut indeps = vec![0; sol.independents.len()];
+
+    if let Some(value) = process_joltage_layer(machine, &sol, 0, &mut indeps) {
+        value
+    } else {
+        println!("{:?}", sol);
+        0
+    }
 }
 
 fn main() {
@@ -212,7 +357,6 @@ fn main() {
     for machine in machines {
         button_presses += find_minimal_button_presses_for_pattern(&machine);
         joltage_presses += find_minimal_button_presses_for_joltage(&machine);
-        print!(".")
     }
     println!("[Part 1] Buttons pressed for pattern: {}", button_presses);
     println!("[Part 2] Buttons pressed for joltage: {}", joltage_presses);
@@ -226,6 +370,10 @@ fn main() {
 #[cfg(test)]
 #[allow(non_snake_case)]
 mod tests {
+    use std::ptr::eq;
+
+    use crate::SystemOfLinearEquations;
+
     use super::combinations;
 
     #[test]
@@ -246,5 +394,39 @@ mod tests {
     #[test]
     fn combinations__for_entries_5x_slots__returns_list_of_five() {
         assert_eq!(vec![vec![5; 5]], combinations(25, 5, 5))
+    }
+
+    #[test]
+    fn SystemOfLinearEquations__given_unit_matrix__solves_unchanged() {
+        let matrix = vec![vec![1, 0, 0, 1], vec![0, 1, 0, 1], vec![0, 0, 1, 1]];
+
+        let mut eqns = SystemOfLinearEquations {
+            rows: matrix.clone(),
+        };
+        let solution = eqns.gaussian_elimination();
+
+        assert_eq!(solution.rows, matrix);
+    }
+
+    #[test]
+    fn SystemOfLinearEquations__given_flipped_unit_matrix__solves_to_unit_matrix() {
+        let matrix_expected = vec![vec![1, 0, 0, 1], vec![0, 1, 0, 1], vec![0, 0, 1, 1]];
+        let matrix = vec![vec![0, 0, 1, 1], vec![0, 1, 0, 1], vec![1, 0, 0, 1]];
+
+        let mut eqns = SystemOfLinearEquations { rows: matrix };
+        let solution = eqns.gaussian_elimination();
+
+        assert_eq!(solution.rows, matrix_expected);
+    }
+
+    #[test]
+    fn SystemOfLinearEquations__given_lower_triangle_matrix__solves_to_unit_matrix() {
+        let matrix_expected = vec![vec![1, 0, 0, 1], vec![0, 1, 0, 1], vec![0, 0, 1, 1]];
+        let matrix = vec![vec![1, 0, 0, 1], vec![1, 1, 0, 2], vec![1, 1, 1, 3]];
+
+        let mut eqns = SystemOfLinearEquations { rows: matrix };
+        let solution = eqns.gaussian_elimination();
+
+        assert_eq!(solution.rows, matrix_expected);
     }
 }
