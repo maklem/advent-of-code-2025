@@ -129,17 +129,12 @@ impl SystemOfLinearEquations {
         }
     }
 
-    fn find_row(rows: &Vec<Vec<i64>>, column: usize, skip_rows: usize) -> Option<usize> {
-        for row in skip_rows..rows.len() {
-            if rows[row][column] != 0 {
-                return Some(row);
-            }
-        }
-        None
+    fn find_row(rows: &[Vec<i64>], column: usize, skip_rows: usize) -> Option<usize> {
+        (skip_rows..rows.len()).find(|&row| rows[row][column] != 0)
     }
 
     fn eliminate_column(
-        rows: &mut Vec<Vec<i64>>,
+        rows: &mut [Vec<i64>],
         source_row: usize,
         column: usize,
         target_row: usize,
@@ -187,7 +182,7 @@ impl SystemOfLinearEquations {
             }
         }
         AoCSolution {
-            rows: rows,
+            rows,
             dependents,
             independents,
         }
@@ -218,7 +213,7 @@ impl AoCSolution {
                     if row == 0 {
                         Some(parameters.iter().sum::<i64>() + 1)
                     } else {
-                        self.test_at(parameters, &independent_parameters, column - 1)
+                        self.test_at(parameters, independent_parameters, column - 1)
                     }
                 } else {
                     None
