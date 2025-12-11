@@ -25,3 +25,8 @@ See [Advent of Code](https://adventofcode.com/) for puzzles, instructions and in
 ⭐⭐ [Day 7 - Laboratories](07/)  
 ⭐⭐ [Day 8 - Playground](08/)  
 ⭐⭐ [Day 9 - Movie Theater](09/)  
+⭐💫 [Day 10 - Factory](10/)  
+⭐💫 [Day 11 - Reactor](11/)  
+❓❓ [Day 12 - ...](12/)  
+
+💫: I needed some inspiration online
