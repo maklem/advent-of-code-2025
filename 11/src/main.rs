@@ -5,6 +5,13 @@ struct Node {
     outputs: HashSet<String>,
 }
 
+#[derive(Eq, PartialEq, Hash)]
+struct CacheKey {
+    id: String,
+    needs_fft: bool,
+    needs_dac: bool,
+}
+
 impl Node {
     fn from_str(line: &str) -> Self {
         let mut iter = line.split(" ");
@@ -18,16 +25,50 @@ impl Node {
     }
 }
 
-fn follow_path(machines: &HashMap<String, Node>, node: &String, _path_factor: i64) -> i64 {
-    if node == "out" {
-        return 1;
+fn follow_path(
+    machines: &HashMap<String, Node>,
+    mut target: CacheKey,
+    cache: &mut HashMap<CacheKey, i64>,
+) -> i64 {
+    match target.id.as_str() {
+        "out" => {
+            return if target.needs_dac || target.needs_fft {
+                0
+            } else {
+                1
+            };
+        }
+        "dac" => {
+            target.needs_dac = false;
+        }
+        "fft" => {
+            target.needs_fft = false;
+        }
+        _ => {}
     }
-    if machines.contains_key(node) {
-        machines[node]
+
+    if cache.contains_key(&target) {
+        return cache[&target];
+    }
+
+    if machines.contains_key(&target.id) {
+        let count = machines[&target.id]
             .outputs
             .iter()
-            .map(|n| follow_path(machines, n, _path_factor))
-            .sum()
+            .map(|n| {
+                follow_path(
+                    machines,
+                    CacheKey {
+                        id: n.clone(),
+                        needs_fft: target.needs_fft,
+                        needs_dac: target.needs_dac,
+                    },
+                    cache,
+                )
+            })
+            .sum();
+        cache.insert(target, count);
+        count
     } else {
         0
     }
@@ -45,10 +86,20 @@ fn main() {
         .map(|n| (n.id.clone(), n))
         .collect();
 
-    let you = String::from("you");
-    let paths = follow_path(&machines, &you, 1);
+    let you = CacheKey{
+        id: String::from("you"),
+        needs_dac: false,
+        needs_fft: false,};
+    let paths = follow_path(&machines, you, &mut HashMap::new());
 
     println!("Found Paths: {}", paths);
+
+    let svr = CacheKey{
+        id: String::from("svr"),
+        needs_dac: true,
+        needs_fft: true,};
+    let paths_pt2 = follow_path(&machines, svr, &mut HashMap::new());
+    println!("Found Paths: {}", paths_pt2);
 
     println!(
         "evaluation took {} ms",
