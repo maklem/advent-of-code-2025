@@ -27,6 +27,6 @@ See [Advent of Code](https://adventofcode.com/) for puzzles, instructions and in
 ⭐⭐ [Day 9 - Movie Theater](09/)  
 ⭐💫 [Day 10 - Factory](10/)  
 ⭐💫 [Day 11 - Reactor](11/)  
-❓❓ [Day 12 - ...](12/)  
+⭐🎄 [Day 12 - Christmas Tree Farm](12/)  
 
 💫: I needed some inspiration online
