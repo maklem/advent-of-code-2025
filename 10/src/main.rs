@@ -365,8 +365,6 @@ fn main() {
 #[cfg(test)]
 #[allow(non_snake_case)]
 mod tests {
-    use std::ptr::eq;
-
     use crate::SystemOfLinearEquations;
 
     use super::combinations;
@@ -395,7 +393,7 @@ mod tests {
     fn SystemOfLinearEquations__given_unit_matrix__solves_unchanged() {
         let matrix = vec![vec![1, 0, 0, 1], vec![0, 1, 0, 1], vec![0, 0, 1, 1]];
 
-        let mut eqns = SystemOfLinearEquations {
+        let eqns = SystemOfLinearEquations {
             rows: matrix.clone(),
         };
         let solution = eqns.gaussian_elimination();
@@ -408,7 +406,7 @@ mod tests {
         let matrix_expected = vec![vec![1, 0, 0, 1], vec![0, 1, 0, 1], vec![0, 0, 1, 1]];
         let matrix = vec![vec![0, 0, 1, 1], vec![0, 1, 0, 1], vec![1, 0, 0, 1]];
 
-        let mut eqns = SystemOfLinearEquations { rows: matrix };
+        let eqns = SystemOfLinearEquations { rows: matrix };
         let solution = eqns.gaussian_elimination();
 
         assert_eq!(solution.rows, matrix_expected);
@@ -419,7 +417,7 @@ mod tests {
         let matrix_expected = vec![vec![1, 0, 0, 1], vec![0, 1, 0, 1], vec![0, 0, 1, 1]];
         let matrix = vec![vec![1, 0, 0, 1], vec![1, 1, 0, 2], vec![1, 1, 1, 3]];
 
-        let mut eqns = SystemOfLinearEquations { rows: matrix };
+        let eqns = SystemOfLinearEquations { rows: matrix };
         let solution = eqns.gaussian_elimination();
 
         assert_eq!(solution.rows, matrix_expected);
